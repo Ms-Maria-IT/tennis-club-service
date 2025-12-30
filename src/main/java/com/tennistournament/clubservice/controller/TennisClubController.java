@@ -3,6 +3,7 @@ package com.tennistournament.clubservice.controller;
 import com.tennistournament.clubservice.dto.TennisClubRequest;
 import com.tennistournament.clubservice.dto.TennisClubResponse;
 import com.tennistournament.clubservice.service.TennisClubService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -26,6 +27,7 @@ public class TennisClubController {
     }
 
     @PostMapping
+    @RateLimiter(name = "clubCreationStrict")
     @Operation(summary = "Create a new tennis club", description = "Creates a new tennis club with the provided information")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Tennis club created successfully"),
@@ -37,6 +39,7 @@ public class TennisClubController {
     }
 
     @GetMapping
+    @RateLimiter(name = "clubApiGlobal")
     @Operation(summary = "Get all tennis clubs", description = "Retrieves a list of all tennis clubs")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved list of tennis clubs")
     public ResponseEntity<List<TennisClubResponse>> getAllClubs() {
@@ -45,6 +48,7 @@ public class TennisClubController {
     }
 
     @GetMapping("/{id}")
+    @RateLimiter(name = "clubApiGlobal")
     @Operation(summary = "Get tennis club by ID", description = "Retrieves a specific tennis club by its ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Tennis club found"),
