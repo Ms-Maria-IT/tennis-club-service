@@ -21,6 +21,12 @@ spring:
     console:
       enabled: true
       path: /h2-console
+  
+  # Redis - disable auto-configuration if not needed
+  data:
+    redis:
+      repositories:
+        enabled: false
 
 # Actuator Configuration
 management:
@@ -31,6 +37,15 @@ management:
   endpoint:
     health:
       show-details: always
+    ratelimiters:
+      enabled: true
+    resilience4j:
+      ratelimiter:
+        metrics:
+          enabled: true
+        events:
+          endpoint:
+            enabled: true
   metrics:
     tags:
       application: tennis-club-service
@@ -45,8 +60,22 @@ management:
 
 logging:
   level:
-    com.tennis.clubservice: INFO
-    org.springframework.web: INFO
+    com.tennistournament.clubservice: INFO
+    org.springframework: INFO
+    org.hibernate: INFO
+    
+    # External integrations - debug for troubleshooting
+    feign: DEBUG
+    io.github.resilience4j: INFO
+    
+  pattern:
+    # Structured JSON for production, readable for development
+    console: "%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n"
+    
+  file:
+    name: logs/app.log
+    max-size: 10MB
+    max-history: 7
 
 resilience4j:
   ratelimiter:
