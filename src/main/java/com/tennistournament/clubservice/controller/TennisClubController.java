@@ -77,12 +77,12 @@ public class TennisClubController {
             log.info("GET /api/clubs - Retrieved {} clubs in {}ms", 
                     clubs.size(), System.currentTimeMillis() - startTime);
             
-            if (log.isDebugEnabled() && !clubs.isEmpty()) {
-                clubs.forEach(club -> 
-                    log.debug("Club in response: id={}, name={}, courts={}", 
-                            club.getId(), club.getName(), 
-                            club.getCourtIds() != null ? club.getCourtIds().size() : 0));
-            }
+        if (log.isDebugEnabled() && !clubs.isEmpty()) {
+            clubs.forEach(club -> 
+                log.debug("Club in response: id={}, name={}, courts={}", 
+                        club.getId(), club.getName(), 
+                        club.getCourts() != null ? club.getCourts().size() : 0));
+        }
             
             return ResponseEntity
                     .ok()

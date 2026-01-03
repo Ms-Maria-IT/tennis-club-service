@@ -1,40 +1,26 @@
 package com.tennistournament.clubservice.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+import lombok.Data;
 
+@Data
 public class TennisClubRequest {
-
+    
     @NotBlank(message = "Club name is required")
-    @Size(min = 1, max = 100, message = "Club name must be between 1 and 100 characters")
+    @Size(min = 1, max = 100)
     private String name;
-
-    @Size(max = 255, message = "Address must not exceed 255 characters")
+    
+    @NotBlank(message = "Address is required")
+    @Size(max = 255)
     private String address;
-
-    // Constructors
-    public TennisClubRequest() {
-    }
-
-    public TennisClubRequest(String name, String address) {
-        this.name = name;
-        this.address = address;
-    }
-
-    // Getters and Setters
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    
+    @Pattern(regexp = "^\\+?[0-9\\s\\-()]{7,20}$")
+    private String phoneNumber;
+    
+    @Email
+    @Size(max = 100)
+    private String email;
+    
+    private String openingTime;
+    private String closingTime;
 }

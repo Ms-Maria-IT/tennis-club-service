@@ -1,69 +1,73 @@
 package com.tennistournament.clubservice.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+import lombok.*;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "tennis_clubs")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = "courts")
 public class TennisClub {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
-    @NotBlank(message = "Club name is required")
-    @Size(min = 1, max = 100, message = "Club name must be between 1 and 100 characters")
+    @NotBlank
+    @Size(min = 1, max = 100)
     @Column(nullable = false)
     private String name;
 
-    @Size(max = 255, message = "Address must not exceed 255 characters")
+    @NotBlank
+    @Size(max = 255)
+    @Column(nullable = false)
     private String address;
 
+    @Pattern(regexp = "^\\+?[0-9\\s\\-()]{7,20}$")
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Email
+    @Size(max = 100)
+    private String email;
+
+    @Column(name = "opening_time")
+    private LocalTime openingTime;
+
+    @Column(name = "closing_time")
+    private LocalTime closingTime;
+
+    @Column(name = "is_active")
+    @Builder.Default
+    private Boolean isActive = true;
+
     @OneToMany(mappedBy = "tennisClub", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Court> courts = new ArrayList<>();
 
-    // Constructors
-    public TennisClub() {
+    public void addCourt(Court court) {
+        courts.add(court);
+        court.setTennisClub(this);
     }
 
-    public TennisClub(String name, String address) {
-        this.name = name;
-        this.address = address;
+    public void removeCourt(Court court) {
+        courts.remove(court);
+        court.setTennisClub(null);
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public List<Court> getCourts() {
-        return courts;
-    }
-
-    public void setCourts(List<Court> courts) {
-        this.courts = courts;
+    public boolean isOpenAt(LocalTime time) {
+        if (time == null || openingTime == null || closingTime == null) {
+            return false;
+        }
+        return !time.isBefore(openingTime) && !time.isAfter(closingTime);
     }
 }

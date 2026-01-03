@@ -2,6 +2,7 @@ package com.tennistournament.clubservice.service.impl;
 
 import com.tennistournament.clubservice.dto.TennisClubRequest;
 import com.tennistournament.clubservice.dto.TennisClubResponse;
+import com.tennistournament.clubservice.dto.CourtResponse;
 import com.tennistournament.clubservice.model.TennisClub;
 import com.tennistournament.clubservice.repository.TennisClubRepository;
 import com.tennistournament.clubservice.service.TennisClubService;
@@ -11,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class TennisClubServiceImpl implements TennisClubService {
 
     private final TennisClubRepository tennisClubRepository;
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     public TennisClubServiceImpl(TennisClubRepository tennisClubRepository) {
         this.tennisClubRepository = tennisClubRepository;
@@ -27,14 +31,22 @@ public class TennisClubServiceImpl implements TennisClubService {
 
     @Override
     public TennisClubResponse createClub(TennisClubRequest request) {
-        log.info("Creating new tennis club: name={}", request.getName());
+        log.info("Creating new tennis club: name={}, address={}", 
+                request.getName(), request.getAddress());
         
         long startTime = System.currentTimeMillis();
         
         try {
-            TennisClub club = new TennisClub();
-            club.setName(request.getName());
-            club.setAddress(request.getAddress());
+            // ИСПРАВЛЕНО: Полный маппинг из request
+            TennisClub club = TennisClub.builder()
+                    .name(request.getName())
+                    .address(request.getAddress())
+                    .phoneNumber(request.getPhoneNumber())
+                    .email(request.getEmail())
+                    .openingTime(parseTime(request.getOpeningTime()))
+                    .closingTime(parseTime(request.getClosingTime()))
+                    .isActive(true)
+                    .build();
             
             TennisClub savedClub = tennisClubRepository.save(club);
             
@@ -111,8 +123,7 @@ public class TennisClubServiceImpl implements TennisClubService {
 
     @Override
     public TennisClubResponse updateClub(Long id, TennisClubRequest request) {
-        log.info("Updating club id={}: name={}, address={}", 
-                id, request.getName(), request.getAddress());
+        log.info("Updating club id={}: name={}", id, request.getName());
         
         long startTime = System.currentTimeMillis();
         
@@ -125,8 +136,14 @@ public class TennisClubServiceImpl implements TennisClubService {
                     });
             
             String oldName = club.getName();
+            
+            // ИСПРАВЛЕНО: Обновляем все поля
             club.setName(request.getName());
             club.setAddress(request.getAddress());
+            club.setPhoneNumber(request.getPhoneNumber());
+            club.setEmail(request.getEmail());
+            club.setOpeningTime(parseTime(request.getOpeningTime()));
+            club.setClosingTime(parseTime(request.getClosingTime()));
             
             TennisClub updatedClub = tennisClubRepository.save(club);
             
@@ -166,25 +183,56 @@ public class TennisClubServiceImpl implements TennisClubService {
         }
     }
 
+    // ИСПРАВЛЕННЫЙ метод маппинга
     private TennisClubResponse mapToResponse(TennisClub club) {
         TennisClubResponse response = new TennisClubResponse();
         response.setId(club.getId());
         response.setName(club.getName());
         response.setAddress(club.getAddress());
+        response.setPhoneNumber(club.getPhoneNumber());
+        response.setEmail(club.getEmail());
+        response.setOpeningTime(club.getOpeningTime());
+        response.setClosingTime(club.getClosingTime());
+        response.setIsActive(club.getIsActive());
         
+        // Маппинг кортов
         if (club.getCourts() != null && !club.getCourts().isEmpty()) {
-            List<Long> courtIds = club.getCourts().stream()
-                    .map(court -> court.getId())
+            List<CourtResponse> courtResponses = club.getCourts().stream()
+                    .map(court -> {
+                        CourtResponse courtResponse = new CourtResponse();
+                        courtResponse.setId(court.getId());
+                        courtResponse.setCourtName(court.getCourtName());
+                        courtResponse.setCourtNumber(court.getCourtNumber());
+                        courtResponse.setSurfaceType(court.getSurfaceType().name());
+                        courtResponse.setIsIndoor(court.getIsIndoor());
+                        courtResponse.setHasFloodlights(court.getHasFloodlights());
+                        courtResponse.setIsActive(court.getIsActive());
+                        courtResponse.setClubId(club.getId());
+                        courtResponse.setClubName(club.getName());
+                        return courtResponse;
+                    })
                     .collect(Collectors.toList());
-            response.setCourtIds(courtIds);
+            response.setCourts(courtResponses);
             
             log.trace("Mapped club to response: id={}, name={}, courts={}", 
-                    club.getId(), club.getName(), courtIds.size());
+                    club.getId(), club.getName(), courtResponses.size());
         } else {
             log.trace("Mapped club to response: id={}, name={}, no courts", 
                     club.getId(), club.getName());
         }
         
         return response;
+    }
+    
+    private LocalTime parseTime(String timeStr) {
+        if (timeStr == null || timeStr.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalTime.parse(timeStr, TIME_FORMATTER);
+        } catch (Exception e) {
+            log.warn("Invalid time format: {}, expected HH:mm", timeStr);
+            return null;
+        }
     }
 }

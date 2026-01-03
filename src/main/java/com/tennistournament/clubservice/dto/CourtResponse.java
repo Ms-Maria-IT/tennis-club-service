@@ -1,52 +1,20 @@
 package com.tennistournament.clubservice.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class CourtResponse {
     private Long id;
+    private String courtName;
     private Integer courtNumber;
     private String surfaceType;
-    private Long tennisClubId;
-
-    // Constructors
-    public CourtResponse() {
-    }
-
-    public CourtResponse(Long id, Integer courtNumber, String surfaceType, Long tennisClubId) {
-        this.id = id;
-        this.courtNumber = courtNumber;
-        this.surfaceType = surfaceType;
-        this.tennisClubId = tennisClubId;
-    }
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Integer getCourtNumber() {
-        return courtNumber;
-    }
-
-    public void setCourtNumber(Integer courtNumber) {
-        this.courtNumber = courtNumber;
-    }
-
-    public String getSurfaceType() {
-        return surfaceType;
-    }
-
-    public void setSurfaceType(String surfaceType) {
-        this.surfaceType = surfaceType;
-    }
-
-    public Long getTennisClubId() {
-        return tennisClubId;
-    }
-
-    public void setTennisClubId(Long tennisClubId) {
-        this.tennisClubId = tennisClubId;
-    }
+    private Boolean isIndoor;
+    private Boolean hasFloodlights;
+    private Boolean isActive;
+    private Long clubId;
+    private String clubName;
 }

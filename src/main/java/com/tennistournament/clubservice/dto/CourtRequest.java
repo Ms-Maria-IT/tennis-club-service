@@ -1,39 +1,24 @@
 package com.tennistournament.clubservice.dto;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import com.tennistournament.clubservice.model.Court;
+import jakarta.validation.constraints.*;
+import lombok.Data;
 
+@Data
 public class CourtRequest {
-
+    
+    @NotBlank(message = "Court name is required")
+    @Size(min = 1, max = 50)
+    private String courtName;
+    
     @NotNull(message = "Court number is required")
+    @Min(1)
     private Integer courtNumber;
-
-    @Size(max = 50, message = "Surface type must not exceed 50 characters")
-    private String surfaceType;
-
-    // Constructors
-    public CourtRequest() {
-    }
-
-    public CourtRequest(Integer courtNumber, String surfaceType) {
-        this.courtNumber = courtNumber;
-        this.surfaceType = surfaceType;
-    }
-
-    // Getters and Setters
-    public Integer getCourtNumber() {
-        return courtNumber;
-    }
-
-    public void setCourtNumber(Integer courtNumber) {
-        this.courtNumber = courtNumber;
-    }
-
-    public String getSurfaceType() {
-        return surfaceType;
-    }
-
-    public void setSurfaceType(String surfaceType) {
-        this.surfaceType = surfaceType;
-    }
+    
+    @NotNull(message = "Surface type is required")
+    private Court.SurfaceType surfaceType;
+    
+    private Boolean isIndoor = false;
+    
+    private Boolean hasFloodlights = false;
 }

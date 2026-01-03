@@ -31,8 +31,8 @@ public class CourtServiceImpl implements CourtService {
 
     @Override
     public CourtResponse createCourt(Long clubId, CourtRequest request) {
-        log.info("Creating court for clubId={}, courtNumber={}, surfaceType={}", 
-                clubId, request.getCourtNumber(), request.getSurfaceType());
+        log.info("Creating court for clubId={}, courtName={}, courtNumber={}", 
+                clubId, request.getCourtName(), request.getCourtNumber());
         
         long startTime = System.currentTimeMillis();
         
@@ -46,15 +46,22 @@ public class CourtServiceImpl implements CourtService {
             
             log.debug("Club found: id={}, name={}", club.getId(), club.getName());
             
-            Court court = new Court();
-            court.setCourtNumber(request.getCourtNumber());
-            court.setSurfaceType(request.getSurfaceType());
-            court.setTennisClub(club);
+            // ИСПРАВЛЕНО: Полный маппинг из request в entity
+            Court court = Court.builder()
+                    .courtName(request.getCourtName())
+                    .courtNumber(request.getCourtNumber())
+                    .surfaceType(request.getSurfaceType())
+                    .isIndoor(request.getIsIndoor() != null ? request.getIsIndoor() : false)
+                    .hasFloodlights(request.getHasFloodlights() != null ? request.getHasFloodlights() : false)
+                    .isActive(true) // Новый корт всегда активен
+                    .tennisClub(club)
+                    .build();
             
             Court savedCourt = courtRepository.save(court);
             
-            log.info("Court created successfully: id={}, courtNumber={}, clubId={}", 
-                    savedCourt.getId(), savedCourt.getCourtNumber(), clubId);
+            log.info("Court created successfully: id={}, name={}, courtNumber={}, clubId={}", 
+                    savedCourt.getId(), savedCourt.getCourtName(), 
+                    savedCourt.getCourtNumber(), clubId);
             
             CourtResponse response = mapToResponse(savedCourt);
             
@@ -89,8 +96,9 @@ public class CourtServiceImpl implements CourtService {
             
             if (log.isDebugEnabled()) {
                 courts.forEach(court -> 
-                    log.debug("Court found: id={}, number={}, surface={}", 
-                            court.getId(), court.getCourtNumber(), court.getSurfaceType()));
+                    log.debug("Court found: id={}, name={}, number={}, surface={}", 
+                            court.getId(), court.getCourtName(), 
+                            court.getCourtNumber(), court.getSurfaceType()));
             }
             
             List<CourtResponse> responses = courts.stream()
@@ -123,8 +131,8 @@ public class CourtServiceImpl implements CourtService {
                                 "Court not found with id: " + id);
                     });
             
-            log.info("Court retrieved: id={}, number={}, clubId={}", 
-                    court.getId(), court.getCourtNumber(), 
+            log.info("Court retrieved: id={}, name={}, number={}, clubId={}", 
+                    court.getId(), court.getCourtName(), court.getCourtNumber(),
                     court.getTennisClub() != null ? court.getTennisClub().getId() : "null");
             
             CourtResponse response = mapToResponse(court);
@@ -165,18 +173,20 @@ public class CourtServiceImpl implements CourtService {
         }
     }
 
+    // ИСПРАВЛЕННЫЙ метод маппинга
     private CourtResponse mapToResponse(Court court) {
         CourtResponse response = new CourtResponse();
         response.setId(court.getId());
+        response.setCourtName(court.getCourtName());
         response.setCourtNumber(court.getCourtNumber());
-        response.setSurfaceType(court.getSurfaceType());
+        response.setSurfaceType(court.getSurfaceType().name()); // Enum -> String
+        response.setIsIndoor(court.getIsIndoor());
+        response.setHasFloodlights(court.getHasFloodlights());
+        response.setIsActive(court.getIsActive());
         
         if (court.getTennisClub() != null) {
-            response.setTennisClubId(court.getTennisClub().getId());
-            log.trace("Mapped court to response: id={}, clubId={}", 
-                    court.getId(), court.getTennisClub().getId());
-        } else {
-            log.warn("Court {} has no associated tennis club", court.getId());
+            response.setClubId(court.getTennisClub().getId());
+            response.setClubName(court.getTennisClub().getName());
         }
         
         return response;
