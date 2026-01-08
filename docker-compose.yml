@@ -13,3 +13,14 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686"   # Web UI
+      - "14268:14268"   # Jaeger HTTP
+      - "6831:6831/udp" # Jaeger Compact Thrift
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - LOG_LEVEL=debug
+    restart: unless-stopped

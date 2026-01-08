@@ -30,6 +30,10 @@ spring:
 
 # Actuator Configuration
 management:
+  tracing:
+    sampling:
+      probability: 1.0  # 100% for dev
+    tracing-type: wavefront 
   endpoints:
     web:
       exposure:
@@ -63,14 +67,10 @@ logging:
     com.tennistournament.clubservice: INFO
     org.springframework: INFO
     org.hibernate: INFO
-    
-    # External integrations - debug for troubleshooting
     feign: DEBUG
     io.github.resilience4j: INFO
-    
-  pattern:
-    # Structured JSON for production, readable for development
-    console: "%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n"
+    io.micrometer.tracing: DEBUG
+    io.opentelemetry: INFO
     
   file:
     name: logs/app.log

@@ -16,17 +16,21 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    opentelemetryVersion = '1.32.0'
+    micrometerTracingVersion = '1.2.0'
+    resilience4jVersion = '2.1.0'
+}
+
 dependencies {
     // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    implementation 'org.apache.commons:commons-lang3:3.14.0'
-
-    // Resilience4j для rate limiting и circuit breaker
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel:1.2.0'
+    
+    // Resilience4j for rate limiting and circuit breaker
     implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.1.0'
     implementation 'io.github.resilience4j:resilience4j-reactor:2.1.0'
@@ -44,6 +48,9 @@ dependencies {
     // API Documentation
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
     
+    // Utilities
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
     
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
